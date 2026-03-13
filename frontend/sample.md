@@ -1,11 +1,30 @@
-https://www.onramper.com/
-https://www.transfi.com/products/ramp
-https://www.bitpay.com/
-https://guardarian.com/
+- build a dedicated page for the onramp
+- write and aggregrator lib file for the onramp, research and get the sandbox apis and keys for each provider.
+  most of them only swap to btc so we need to either research a bridge for sbtc after the swap or find a provider that swaps to sbtc
 
-todo
+export interface ProviderQuote {
+provider: string;
+logoSymbol: string;
+rate: number; // How many USD per 1 sBTC (higher = better rate for fiat buyer)
+feeFixed: number; // Fixed fee in USD
+feePercent: number; // Percentage fee (e.g., 0.015 = 1.5%)
+feeTotal: number; // Calculated: feeFixed + amount \* feePercent
+amountOut: number; // sBTC you receive for the given fiat amount
+estimatedTime: string;
+noKyc: boolean;
+kycThreshold: number; // Max USD purchasable without KYC
+minAmount: number;
+maxAmount: number;
+available: boolean;
+badge?: string;
+score: number; // Computed ranking score (higher = better)
+isLiveQuote: boolean; // true if quote came from real API, false if computed
+}
 
-- build a landing page drawing inspiration from the samples above. Make sure it's not generic and it looks professional.
+export interface AggregatorParams {
+amount: number; // Fiat amount in USD
+currency?: string;
+}
 
 - build out the flow to get quotes, but putting price and currency and select provider.
 

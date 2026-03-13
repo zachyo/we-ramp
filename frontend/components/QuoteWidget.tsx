@@ -1,31 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getQuotes, ProviderQuote } from "@/lib/aggregator";
 
 const CURRENCIES = ["USD", "EUR", "GBP"];
-const MOCK_RATE_BTC = 65000;
-
-const PROVIDERS = [
-  { id: "mtpelerin", name: "Mt Pelerin", fee: "0%", time: "~1 min", type: "No-KYC", badge: "Best Rate" },
-  { id: "transfi", name: "TransFi", fee: "1.5%", time: "~3 mins", type: "No-KYC", badge: "" },
-  { id: "ramp", name: "Ramp", fee: "2.9%", time: "~5 mins", type: "Low-KYC", badge: "" },
-];
 
 export default function QuoteWidget() {
   const [amount, setAmount] = useState<string>("500");
   const [currency, setCurrency] = useState<string>("USD");
   const [tab, setTab] = useState<"buy" | "sell">("buy");
-  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<ProviderQuote | null>(null);
+  
+  const [quotes, setQuotes] = useState<ProviderQuote[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const parsedAmount = parseFloat(amount) || 0;
-  const sbtcAmount = (parsedAmount / MOCK_RATE_BTC).toFixed(5);
+  
+  // The 'estimated' best amount out before selecting a specific route
+  const bestAmountOut = quotes.length > 0 ? quotes[0].amountOut : 0;
+
+  useEffect(() => {
+    const fetchQuotes = async () => {
+      if (parsedAmount > 0) {
+        setIsLoading(true);
+        try {
+          const results = await getQuotes({ amount: parsedAmount, currency });
+          setQuotes(results);
+        } catch (error) {
+          console.error("Failed to fetch quotes", error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setQuotes([]);
+      }
+    };
+
+    // Debounce to prevent rapid refetching on every keystroke
+    const timerId = setTimeout(() => {
+      fetchQuotes();
+    }, 500);
+
+    return () => clearTimeout(timerId);
+  }, [parsedAmount, currency]);
 
   return (
     <div className="w-full max-w-lg mx-auto bg-glass-card rounded-4xl p-6 border border-white/10 shadow-2xl relative animate-fade-up overflow-hidden">
       {/* Background glow for the widget */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
 
-      {selectedProvider === "mtpelerin" ? (
+      {selectedProvider ? (
         <div className="flex flex-col h-full animate-fade-in">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-white">Complete Purchase</h3>
@@ -36,12 +60,24 @@ export default function QuoteWidget() {
               ← Back
             </button>
           </div>
-          {/* Mock Widget Embed */}
+          
+          <div className="p-4 bg-black/40 rounded-xl mb-4 border border-white/5 flex justify-between items-center text-sm">
+            <div>
+               <span className="text-zinc-400">Paying</span>
+               <div className="text-white font-medium">{amount} {currency}</div>
+            </div>
+            <div className="text-right">
+               <span className="text-zinc-400">Receiving (via Bridge)</span>
+               <div className="text-primary font-medium">{selectedProvider.amountOut} sBTC</div>
+            </div>
+          </div>
+
+          {/* Widget Embed Placeholder based on selected provider */}
           <div className="w-full h-[400px] bg-black/60 rounded-xl border border-white/10 flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/50 pointer-events-none"></div>
-            <p className="text-zinc-500 font-medium mb-4">Mt Pelerin Widget</p>
+            <p className="text-zinc-500 font-medium mb-4">{selectedProvider.provider} Widget</p>
             <div className="w-12 h-12 rounded-full border-t-2 border-primary animate-spin"></div>
-            <p className="text-xs text-zinc-600 mt-4 absolute bottom-4">Simulating iframe embed...</p>
+            <p className="text-xs text-zinc-600 mt-4 absolute bottom-4">Simulating iframe embed for {selectedProvider.provider}...</p>
           </div>
         </div>
       ) : (
@@ -91,7 +127,7 @@ export default function QuoteWidget() {
               <div className="flex items-center justify-between">
                 <input
                   type="text"
-                  value={parsedAmount > 0 ? sbtcAmount : "0.00"}
+                  value={parsedAmount > 0 ? bestAmountOut.toString() : "0.00"}
                   readOnly
                   className="bg-transparent text-3xl font-semibold text-white focus:outline-none w-full"
                 />
@@ -106,33 +142,53 @@ export default function QuoteWidget() {
           {/* Quotes Section */}
           <div className="mb-2">
             <h4 className="text-sm font-medium text-zinc-400 mb-3 ml-1">Select best route</h4>
-            <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
-              {PROVIDERS.map((provider) => (
+            <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar relative">
+              {isLoading && (
+                 <div className="absolute inset-0 z-10 bg-glass/50 flex items-center justify-center rounded-xl">
+                   <div className="w-6 h-6 rounded-full border-t-2 border-primary animate-spin"></div>
+                 </div>
+              )}
+              {quotes.length === 0 && !isLoading && (
+                 <div className="text-center p-4 text-zinc-500 text-sm">
+                   Enter an amount to see routes.
+                 </div>
+              )}
+              {quotes.map((quote) => (
                 <button
-                  key={provider.id}
-                  onClick={() => setSelectedProvider(provider.id)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all group"
+                  key={quote.provider}
+                  disabled={!quote.available}
+                  onClick={() => setSelectedProvider(quote)}
+                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all group ${
+                    quote.available 
+                      ? "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20" 
+                      : "bg-black/20 border-white/5 opacity-50 cursor-not-allowed"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold font-mono">
-                      {provider.name[0]}
+                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold font-mono text-white">
+                      {quote.logoSymbol}
                     </div>
                     <div className="text-left">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-white">{provider.name}</span>
-                        {provider.badge && (
-                          <span className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 roundedbg-primary/20 text-primary uppercase">
-                            {provider.badge}
+                        <span className="text-sm font-medium text-white">{quote.provider}</span>
+                        {quote.badge && (
+                          <span className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary/20 text-primary uppercase">
+                            {quote.badge}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-zinc-500">{provider.time} • Fee: {provider.fee}</span>
+                      <span className="text-xs text-zinc-500">
+                        {quote.estimatedTime} • Return: {quote.amountOut} sBTC
+                      </span>
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end">
-                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 mb-1">
-                       {provider.type}
-                     </span>
+                     {quote.noKyc && parsedAmount <= quote.kycThreshold && (
+                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 mb-1">
+                         No-KYC
+                       </span>
+                     )}
+                     <span className="text-xs text-zinc-500 mt-1">Fee: ${quote.feeTotal.toFixed(2)}</span>
                   </div>
                 </button>
               ))}

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 export default function HeroSection() {
   return (
     <section className="relative w-full pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
@@ -22,9 +23,9 @@ export default function HeroSection() {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: '0.3s' }}>
-          <a href="#quote-widget" className="btn-primary w-full sm:w-auto px-8 py-4 text-lg">
+          <Link href="/onramp" className="btn-primary w-full sm:w-auto px-8 py-4 text-lg">
             Buy sBTC Now
-          </a>
+          </Link>
           <a href="#features" className="btn-secondary w-full sm:w-auto px-8 py-4 text-lg">
             Explore Features
           </a>
