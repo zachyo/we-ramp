@@ -1,5 +1,6 @@
 import Link from "next/link";
 import QuoteWidget from "@/components/QuoteWidget";
+import WalletConnect from "@/components/WalletConnect";
 
 export const metadata = {
   title: "On-Ramp to sBTC | weRamp",
@@ -19,7 +20,7 @@ export default function OnrampPage() {
             <span className="text-xl font-bold tracking-tight text-white">we<span className="text-gradient">Ramp</span></span>
           </Link>
           <nav className="flex items-center gap-4">
-            <button className="btn-secondary px-4 py-2 text-sm font-medium">Connect Wallet</button>
+            <WalletConnect />
           </nav>
         </div>
       </header>
@@ -54,7 +55,7 @@ export default function OnrampPage() {
             </p>
             <div className="inline-flex items-center justify-center p-1 rounded-full bg-white/5 border border-white/10">
               <span className="px-4 py-1.5 text-xs text-zinc-300 font-medium whitespace-nowrap">Fiat</span>
-              <svg className="w-3 h-3 text-zinc-600 mx-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              <svg className="w-3 h-3 text-zinc-600 mx-1 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 font-medium text-xs whitespace-nowrap">
                 <div className="w-3.5 h-3.5 bg-orange-500 text-black rounded-full flex items-center justify-center text-[8px] font-bold">₿</div>
                 Native BTC

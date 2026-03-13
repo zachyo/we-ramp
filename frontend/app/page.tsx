@@ -4,6 +4,7 @@ import ProvidersMarquee from "@/components/ProvidersMarquee";
 import FeaturesSection from "@/components/FeaturesSection";
 import WaitlistForm from "@/components/WaitlistForm";
 import QuoteWidget from "@/components/QuoteWidget";
+import WalletConnect from "@/components/WalletConnect";
 
 export default function Home() {
   return (
@@ -19,7 +20,7 @@ export default function Home() {
           </div>
           <nav className="flex items-center gap-4">
             <a href="#features" className="hidden sm:block text-sm font-medium text-zinc-400 hover:text-white transition-colors">Features</a>
-            <button className="btn-secondary px-4 py-2 text-sm font-medium">Connect Wallet</button>
+            <WalletConnect />
           </nav>
         </div>
       </header>
