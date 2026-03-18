@@ -64,17 +64,23 @@ export async function getQuotes(params: AggregatorParams): Promise<ProviderQuote
   const mtPelerinTotalFee = mtPelerinFeeFixed + (amount * mtPelerinFeePercent);
   const mtPelerinAmountOut = (amount - mtPelerinTotalFee) / MOCK_BTC_PRICE_USD;
 
-  // 2. TransFi (Solid coverage, standard fee structure)
-  const transfiFeeFixed = 2.0;
-  const transfiFeePercent = 0.015; // 1.5%
-  const transfiTotalFee = transfiFeeFixed + (amount * transfiFeePercent);
-  const transfiAmountOut = (amount - transfiTotalFee) / MOCK_BTC_PRICE_USD;
+  // 2. Transak (Solid coverage, standard fee structure)
+  const transakFeeFixed = 2.0;
+  const transakFeePercent = 0.015; // 1.5%
+  const transakTotalFee = transakFeeFixed + (amount * transakFeePercent);
+  const transakAmountOut = (amount - transakTotalFee) / MOCK_BTC_PRICE_USD;
 
   // 3. Guardarian (Instant exchanges, higher limits)
   const guardarianFeeFixed = 0;
   const guardarianFeePercent = 0.02; // 2% bundled
   const guardarianTotalFee = guardarianFeeFixed + (amount * guardarianFeePercent);
   const guardarianAmountOut = (amount - guardarianTotalFee) / MOCK_BTC_PRICE_USD;
+
+  // 4. Onramp.money (Good emerging market coverage)
+  const onrampFeeFixed = 1.0;
+  const onrampFeePercent = 0.01; // ~1%
+  const onrampTotalFee = onrampFeeFixed + (amount * onrampFeePercent);
+  const onrampAmountOut = (amount - onrampTotalFee) / MOCK_BTC_PRICE_USD;
 
   const quotes: ProviderQuote[] = [
     {
@@ -96,13 +102,13 @@ export async function getQuotes(params: AggregatorParams): Promise<ProviderQuote
       isLiveQuote: false,
     },
     {
-      provider: "TransFi",
+      provider: "Transak",
       logoSymbol: "T",
       rate: MOCK_BTC_PRICE_USD,
-      feeFixed: transfiFeeFixed,
-      feePercent: transfiFeePercent,
-      feeTotal: transfiTotalFee,
-      amountOut: Number(transfiAmountOut.toFixed(8)),
+      feeFixed: transakFeeFixed,
+      feePercent: transakFeePercent,
+      feeTotal: transakTotalFee,
+      amountOut: Number(transakAmountOut.toFixed(8)),
       estimatedTime: "~3 mins",
       noKyc: false,
       kycThreshold: 0,
@@ -126,6 +132,23 @@ export async function getQuotes(params: AggregatorParams): Promise<ProviderQuote
       minAmount: 50,
       maxAmount: 20000,
       available: amount >= 50 && amount <= 20000,
+      score: 0,
+      isLiveQuote: false,
+    },
+    {
+      provider: "Onramp.money",
+      logoSymbol: "O",
+      rate: MOCK_BTC_PRICE_USD,
+      feeFixed: onrampFeeFixed,
+      feePercent: onrampFeePercent,
+      feeTotal: onrampTotalFee,
+      amountOut: Number(onrampAmountOut.toFixed(8)),
+      estimatedTime: "~2 mins",
+      noKyc: false,
+      kycThreshold: 0,
+      minAmount: 5,
+      maxAmount: 10000,
+      available: amount >= 5 && amount <= 10000,
       score: 0,
       isLiveQuote: false,
     }

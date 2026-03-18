@@ -1,6 +1,6 @@
 import Link from "next/link";
-import QuoteWidget from "@/components/QuoteWidget";
-import WalletConnect from "@/components/WalletConnect";
+import QuoteWidget from "@/components/quotes/QuoteWidget";
+import WalletConnect from "@/components/wallet/WalletConnect";
 
 export const metadata = {
   title: "On-Ramp to sBTC | weRamp",

@@ -35,14 +35,6 @@ function isProduction(): boolean {
 function getProviderConfigs(): Record<string, ProviderWidgetConfig> {
   const prod = isProduction();
   return {
-    MoonPay: {
-      baseUrl: prod
-        ? "https://buy.moonpay.com"
-        : "https://buy-sandbox.moonpay.com",
-      requiresApiKey: true,
-      apiKey: process.env.NEXT_PUBLIC_MOONPAY_API_KEY || "",
-      apiKeyParam: "apiKey",
-    },
     Transak: {
       baseUrl: prod
         ? "https://global.transak.com"
@@ -51,13 +43,19 @@ function getProviderConfigs(): Record<string, ProviderWidgetConfig> {
       apiKey: process.env.NEXT_PUBLIC_TRANSAK_API_KEY || "",
       apiKeyParam: "apiKey",
     },
-    "Ramp Network": {
-      baseUrl: prod
-        ? "https://app.ramp.network"
-        : "https://app.demo.ramp.network",
+    Guardarian: {
+      baseUrl: "https://guardarian.com/calculator/v1/",
       requiresApiKey: true,
-      apiKey: process.env.NEXT_PUBLIC_RAMP_API_KEY || "",
-      apiKeyParam: "hostApiKey",
+      apiKey: process.env.NEXT_PUBLIC_GUARDARIAN_API_KEY || "",
+      apiKeyParam: "partner_api_token",
+    },
+    "Onramp.money": {
+      baseUrl: prod
+        ? "https://onramp.money/main/buy"
+        : "https://staging.onramp.money/main/buy",
+      requiresApiKey: true,
+      apiKey: process.env.NEXT_PUBLIC_ONRAMP_API_KEY || "",
+      apiKeyParam: "appId",
     },
     "Mt Pelerin": {
       baseUrl: "https://widget.mtpelerin.com",
@@ -99,18 +97,6 @@ export function buildProviderWidgetUrl(params: WidgetUrlParams): string | null {
   const url = new URL(config.baseUrl);
 
   switch (provider) {
-    case "MoonPay":
-      if (apiKey && config.apiKeyParam) {
-        url.searchParams.set(config.apiKeyParam, apiKey);
-      }
-      url.searchParams.set("currencyCode", "btc");
-      url.searchParams.set("baseCurrencyCode", currency.toLowerCase());
-      url.searchParams.set("baseCurrencyAmount", amount.toString());
-      url.searchParams.set("walletAddress", walletAddress);
-      url.searchParams.set("colorCode", "%23f7931a"); // Bitcoin orange
-      url.searchParams.set("theme", "dark");
-      break;
-
     case "Transak":
       if (apiKey && config.apiKeyParam) {
         url.searchParams.set(config.apiKeyParam, apiKey);
@@ -125,15 +111,26 @@ export function buildProviderWidgetUrl(params: WidgetUrlParams): string | null {
       url.searchParams.set("disableWalletAddressForm", "true");
       break;
 
-    case "Ramp Network":
+    case "Guardarian":
       if (apiKey && config.apiKeyParam) {
         url.searchParams.set(config.apiKeyParam, apiKey);
       }
-      url.searchParams.set("swapAsset", "BTC_BTC");
-      url.searchParams.set("fiatValue", amount.toString());
-      url.searchParams.set("fiatCurrency", currency.toUpperCase());
-      url.searchParams.set("userAddress", walletAddress);
-      url.searchParams.set("variant", "embedded-desktop");
+      url.searchParams.set("default_fiat_currency", currency.toUpperCase());
+      url.searchParams.set("default_crypto_currency", "BTC");
+      url.searchParams.set("default_fiat_amount", amount.toString());
+      url.searchParams.set("create_nav_behaviour", "new_tab");
+      url.searchParams.set("theme", "orange");
+      url.searchParams.set("payment_address", walletAddress);
+      break;
+
+    case "Onramp.money":
+      if (apiKey && config.apiKeyParam) {
+        url.searchParams.set(config.apiKeyParam, apiKey);
+      }
+      url.searchParams.set("coinCode", "btc");
+      url.searchParams.set("fiatAmount", amount.toString());
+      url.searchParams.set("fiatType", currency.toUpperCase());
+      url.searchParams.set("walletAddress", walletAddress);
       break;
 
     case "Mt Pelerin":
@@ -162,9 +159,9 @@ export function buildProviderWidgetUrl(params: WidgetUrlParams): string | null {
  */
 export function getProviderFallbackUrl(provider: string): string | null {
   const FALLBACK_URLS: Record<string, string> = {
-    MoonPay: "https://www.moonpay.com/buy/btc",
     Transak: "https://global.transak.com",
-    "Ramp Network": "https://ramp.network/buy",
+    Guardarian: "https://guardarian.com",
+    "Onramp.money": "https://onramp.money/main/buy",
     "Mt Pelerin": "https://www.mtpelerin.com/buy-bitcoin",
   };
   return FALLBACK_URLS[provider] ?? null;

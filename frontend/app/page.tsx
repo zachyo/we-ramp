@@ -1,9 +1,9 @@
-import HeroSection from "@/components/HeroSection";
-import ProvidersMarquee from "@/components/ProvidersMarquee";
-import FeaturesSection from "@/components/FeaturesSection";
-import WaitlistForm from "@/components/WaitlistForm";
-import QuoteWidget from "@/components/QuoteWidget";
-import WalletConnect from "@/components/WalletConnect";
+import HeroSection from "@/components/home/HeroSection";
+import ProvidersMarquee from "@/components/home/ProvidersMarquee";
+import FeaturesSection from "@/components/home/FeaturesSection";
+import WaitlistForm from "@/components/home/WaitlistForm";
+import QuoteWidget from "@/components/quotes/QuoteWidget";
+import WalletConnect from "@/components/wallet/WalletConnect";
 
 export default function Home() {
   return (
